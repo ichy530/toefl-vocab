@@ -316,6 +316,9 @@
         </div>
       </div>
       <nav>
+        <span class="pill" id="userLabel">Not signed in</span>
+        <button class="tabbtn" id="btnLogin">Login</button>
+        <button class="tabbtn" id="btnLogout" style="display:none">Logout</button>
         <button class="tabbtn active" data-tab="study">学習</button>
         <button class="tabbtn" data-tab="add">追加</button>
         <button class="tabbtn" data-tab="quiz">クイズ</button>
@@ -633,10 +636,13 @@
         return defaultState();
       }
     }
-    function saveState(){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      refreshAll();
-    }
+function saveState(){
+  ensureMeta();
+  state.meta.updatedAt = nowMs();              // どちらが新しいか判定するため
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  refreshAll();
+  schedulePushRemote();                       // ログイン中ならクラウドにも反映
+}
 
     function normalizeState(){
       const today = fmtDate(nowMs());
@@ -1136,7 +1142,120 @@
       saveState();
       toast("全削除しました");
     });
+// --- Firebase Sync (Google login + Firestore) ---
+const firebaseConfig = {
+  apiKey: "AIzaSyBiJKNHLWtDSBEdAbBj0MWcTWuC95oI1p4",
+  authDomain: "toefl-vocab.firebaseapp.com",
+  projectId: "toefl-vocab",
+  storageBucket: "toefl-vocab.firebasestorage.app",
+  messagingSenderId: "508031530076",
+  appId: "1:508031530076:web:e6885db25af07952282299",
+  measurementId: "G-W9DZTB8H4N"
+};
 
+let fbAuth = null;
+let fbDb = null;
+let fbUser = null;
+let pushTimer = null;
+const APP_DOC_ID = "toefl-vocab";
+
+function ensureMeta(){
+  if(!state.meta) state.meta = { updatedAt: 0 };
+  if(typeof state.meta.updatedAt !== "number") state.meta.updatedAt = 0;
+}
+
+function remoteRef(){
+  return fbDb
+    .collection("users").doc(fbUser.uid)
+    .collection("apps").doc(APP_DOC_ID);
+}
+
+function applyRemote(remoteState){
+  state = remoteState;
+  normalizeState();
+  ensureMeta();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  refreshAll();
+}
+
+async function pullRemote(){
+  if(!fbUser) return;
+  ensureMeta();
+
+  const snap = await remoteRef().get();
+  if(!snap.exists){
+    await pushRemote(); // 初回はローカルをアップ
+    return;
+  }
+
+  const data = snap.data() || {};
+  const remoteState = data.state;
+  const remoteUpdated = Number(data.updatedAt || 0);
+  const localUpdated = Number(state.meta.updatedAt || 0);
+
+  if(!remoteState) return;
+
+  if(remoteUpdated > localUpdated){
+    applyRemote(remoteState);
+    toast("同期：クラウドを取得しました");
+  }else if(localUpdated > remoteUpdated){
+    await pushRemote();
+  }
+}
+
+async function pushRemote(){
+  if(!fbUser) return;
+  ensureMeta();
+  await remoteRef().set({
+    updatedAt: state.meta.updatedAt,
+    state: state
+  }, { merge: true });
+}
+
+function schedulePushRemote(){
+  if(!fbUser) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(async ()=>{
+    try{ await pushRemote(); }catch(e){}
+  }, 600);
+}
+
+try{
+  firebase.initializeApp(firebaseConfig);
+  fbAuth = firebase.auth();
+  fbDb = firebase.firestore();
+
+  fbAuth.onAuthStateChanged(async (user)=>{
+    fbUser = user;
+
+    const u = document.getElementById("userLabel");
+    const inBtn = document.getElementById("btnLogin");
+    const outBtn = document.getElementById("btnLogout");
+    if(u) u.textContent = fbUser ? `Signed in: ${fbUser.email}` : "Not signed in";
+    if(inBtn) inBtn.style.display = fbUser ? "none" : "inline-flex";
+    if(outBtn) outBtn.style.display = fbUser ? "inline-flex" : "none";
+
+    if(fbUser){
+      try{ await pullRemote(); }catch(e){}
+    }
+  });
+
+  const loginBtn = document.getElementById("btnLogin");
+  if(loginBtn){
+    loginBtn.addEventListener("click", async ()=>{
+      const provider = new firebase.auth.GoogleAuthProvider();
+      await fbAuth.signInWithPopup(provider);
+    });
+  }
+  const logoutBtn = document.getElementById("btnLogout");
+  if(logoutBtn){
+    logoutBtn.addEventListener("click", async ()=>{
+      await fbAuth.signOut();
+    });
+  }
+}catch(e){
+  // Firebase未設定でもアプリ自体は動かす
+}
     // boot
     let state = loadState();
     normalizeState();
