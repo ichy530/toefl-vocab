@@ -1,0 +1,1144 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#111827" />
+  <title>TOEFL Vocab Trainer</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#0f172a;
+      --card:#111c33;
+      --muted:#9ca3af;
+      --text:#e5e7eb;
+      --line:#23304d;
+      --accent:#60a5fa;
+      --good:#34d399;
+      --warn:#fbbf24;
+      --bad:#fb7185;
+      --shadow: 0 12px 28px rgba(0,0,0,.35);
+      --radius: 14px;
+      --pad: 14px;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", "Segoe UI", "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      background: radial-gradient(1200px 800px at 30% -10%, rgba(96,165,250,.12), transparent 60%),
+                  radial-gradient(1000px 700px at 90% 0%, rgba(52,211,153,.10), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+    a{ color:inherit; }
+    .wrap{
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 18px 14px 42px;
+    }
+    header{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      padding: 10px 0 14px;
+    }
+    .brand{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      min-width: 240px;
+    }
+    .logo{
+      width:38px;height:38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(96,165,250,.9), rgba(52,211,153,.75));
+      box-shadow: var(--shadow);
+    }
+    .title{
+      display:flex; flex-direction:column; line-height:1.15;
+    }
+    .title .h{
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing:.2px;
+    }
+    .title .s{
+      font-size: 12px;
+      color: var(--muted);
+    }
+    nav{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .tabbtn{
+      border: 1px solid var(--line);
+      background: rgba(15,23,42,.45);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-size: 13px;
+      transition: transform .04s ease, border-color .15s ease, background .15s ease;
+      user-select:none;
+    }
+    .tabbtn:active{ transform: scale(.99); }
+    .tabbtn.active{
+      border-color: rgba(96,165,250,.8);
+      background: rgba(96,165,250,.14);
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 14px;
+    }
+    @media (max-width: 920px){
+      .grid{ grid-template-columns: 1fr; }
+      header{ align-items:flex-start; flex-direction:column; }
+      nav{ justify-content:flex-start; }
+    }
+    .panel{
+      background: rgba(15,23,42,.55);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panel .ph{
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    .panel .ph .k{
+      display:flex; flex-direction:column; gap:2px;
+    }
+    .panel .ph .k .t{ font-weight: 700; font-size: 14px; }
+    .panel .ph .k .d{ color: var(--muted); font-size: 12px; }
+    .panel .pc{ padding: 14px; }
+
+    .statrow{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 520px){
+      .statrow{ grid-template-columns: 1fr; }
+    }
+    .stat{
+      background: rgba(17,28,51,.55);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .stat .n{ font-size: 20px; font-weight: 800; letter-spacing:.2px; }
+    .stat .l{ font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .bar{
+      margin-top: 10px;
+      height: 10px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow:hidden;
+    }
+    .bar > div{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(96,165,250,.95), rgba(52,211,153,.9));
+    }
+
+    .card{
+      background: rgba(17,28,51,.55);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .word{
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing:.3px;
+      margin: 4px 0 6px;
+    }
+    .meta{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .pill{
+      border: 1px solid var(--line);
+      background: rgba(15,23,42,.4);
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .answer{
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(156,163,175,.25);
+      display:none;
+    }
+    .answer.show{ display:block; }
+    .answer .m{
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .answer .e{
+      font-size: 13px;
+      color: rgba(229,231,235,.92);
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+    .btnrow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top: 12px;
+    }
+    .btn{
+      border: 1px solid var(--line);
+      background: rgba(15,23,42,.45);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-size: 13px;
+      user-select:none;
+    }
+    .btn.primary{
+      border-color: rgba(96,165,250,.8);
+      background: rgba(96,165,250,.14);
+    }
+    .btn.good{ border-color: rgba(52,211,153,.8); background: rgba(52,211,153,.12); }
+    .btn.warn{ border-color: rgba(251,191,36,.85); background: rgba(251,191,36,.10); }
+    .btn.bad{ border-color: rgba(251,113,133,.85); background: rgba(251,113,133,.10); }
+
+    .form{
+      display:grid;
+      gap:10px;
+    }
+    label{ font-size: 12px; color: var(--muted); }
+    input, textarea, select{
+      width:100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(15,23,42,.45);
+      color: var(--text);
+      outline:none;
+      font-size: 14px;
+    }
+    textarea{ min-height: 92px; resize: vertical; }
+    .row2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 560px){ .row2{ grid-template-columns: 1fr; } }
+
+    .list{
+      margin-top: 10px;
+      display:grid;
+      gap:10px;
+    }
+    .item{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      justify-content:space-between;
+      padding: 12px;
+      background: rgba(17,28,51,.45);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+    .item .l{
+      display:flex; flex-direction:column; gap:4px;
+      min-width: 0;
+    }
+    .item .l .w{ font-weight: 800; }
+    .item .l .m{ color: var(--muted); font-size: 12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width: 560px; }
+    @media (max-width: 920px){ .item .l .m{ max-width: 78vw; } }
+
+    .section{ display:none; }
+    .section.active{ display:block; }
+
+    .small{ font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(17,28,51,.92);
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      display:none;
+      z-index: 9999;
+      max-width: min(680px, 92vw);
+      font-size: 13px;
+    }
+    .toast.show{ display:block; }
+    .mcq{
+      display:grid;
+      gap:10px;
+    }
+    .opt{
+      text-align:left;
+      width:100%;
+      border: 1px solid var(--line);
+      background: rgba(15,23,42,.45);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-size: 14px;
+    }
+    .opt.correct{ border-color: rgba(52,211,153,.8); background: rgba(52,211,153,.12); }
+    .opt.wrong{ border-color: rgba(251,113,133,.85); background: rgba(251,113,133,.10); }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div class="title">
+          <div class="h">TOEFL Vocab Trainer</div>
+          <div class="s">Flashcards / Quiz / Review (local only)</div>
+        </div>
+      </div>
+      <nav>
+        <button class="tabbtn active" data-tab="study">学習</button>
+        <button class="tabbtn" data-tab="add">追加</button>
+        <button class="tabbtn" data-tab="quiz">クイズ</button>
+        <button class="tabbtn" data-tab="list">一覧</button>
+        <button class="tabbtn" data-tab="backup">バックアップ</button>
+      </nav>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="ph">
+          <div class="k">
+            <div class="t">今日の状況</div>
+            <div class="d">学習は「期限が来たカード」から出ます</div>
+          </div>
+          <div class="small mono" id="todayStr"></div>
+        </div>
+        <div class="pc">
+          <div class="statrow">
+            <div class="stat">
+              <div class="n" id="statTotal">0</div>
+              <div class="l">総カード数</div>
+            </div>
+            <div class="stat">
+              <div class="n" id="statDue">0</div>
+              <div class="l">今日の復習</div>
+            </div>
+            <div class="stat">
+              <div class="n" id="statAcc">-</div>
+              <div class="l">クイズ正答率（直近）</div>
+            </div>
+          </div>
+          <div class="bar" aria-label="今日の進捗">
+            <div id="progressBar"></div>
+          </div>
+          <div class="small" style="margin-top:8px" id="progressText"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="ph">
+          <div class="k">
+            <div class="t">使い方</div>
+            <div class="d">最小の流れ</div>
+          </div>
+        </div>
+        <div class="pc small">
+          <div>1) 追加で単語を入れる</div>
+          <div>2) 学習で答えを開いて、評価（Again/Hard/Good/Easy）</div>
+          <div>3) クイズで定着チェック</div>
+          <div style="margin-top:10px">注意：学習データはこの端末のブラウザに保存されます（同期なし）。同期したい場合は設計を変えます。</div>
+        </div>
+      </section>
+    </div>
+
+    <main style="margin-top:14px">
+      <section class="panel section active" id="sec-study">
+        <div class="ph">
+          <div class="k">
+            <div class="t">学習</div>
+            <div class="d">カード → 答え表示 → 評価</div>
+          </div>
+          <div class="small mono" id="studyCounter"></div>
+        </div>
+        <div class="pc">
+          <div id="studyEmpty" class="small" style="display:none">
+            今日の復習はありません。追加するか、クイズを回してください。
+          </div>
+
+          <div id="studyCard" class="card" style="display:none">
+            <div class="meta">
+              <div class="pill" id="pillPos">品詞</div>
+              <div class="pill" id="pillTag">タグ</div>
+              <div class="pill" id="pillDue">次回</div>
+            </div>
+            <div class="word" id="frontWord">-</div>
+
+            <div class="btnrow">
+              <button class="btn primary" id="btnReveal">答えを表示</button>
+              <button class="btn" id="btnSkip">スキップ</button>
+            </div>
+
+            <div class="answer" id="answerBox">
+              <div class="m" id="backMeaning">-</div>
+              <div class="e" id="backExample"></div>
+
+              <div class="btnrow" style="margin-top:12px">
+                <button class="btn bad" data-rate="again">Again</button>
+                <button class="btn warn" data-rate="hard">Hard</button>
+                <button class="btn good" data-rate="good">Good</button>
+                <button class="btn primary" data-rate="easy">Easy</button>
+              </div>
+              <div class="small" style="margin-top:8px;color:var(--muted)">
+                評価は間隔に反映されます（簡易SM-2）。
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel section" id="sec-add">
+        <div class="ph">
+          <div class="k">
+            <div class="t">追加</div>
+            <div class="d">英単語と日本語の意味を入れる</div>
+          </div>
+        </div>
+        <div class="pc">
+          <form class="form" id="addForm">
+            <div class="row2">
+              <div>
+                <label>英単語</label>
+                <input id="inWord" placeholder="例: undermine" required />
+              </div>
+              <div>
+                <label>品詞（任意）</label>
+                <select id="inPos">
+                  <option value="">未設定</option>
+                  <option>noun</option><option>verb</option><option>adjective</option><option>adverb</option>
+                  <option>phrase</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label>日本語の意味</label>
+              <input id="inMeaning" placeholder="例: （信頼・努力などを）損なう／弱める" required />
+            </div>
+            <div class="row2">
+              <div>
+                <label>タグ（任意）</label>
+                <input id="inTag" placeholder="例: academic / reading" />
+              </div>
+              <div>
+                <label>例文（任意）</label>
+                <input id="inExampleOne" placeholder="例: Lack of sleep undermines concentration." />
+              </div>
+            </div>
+            <div>
+              <button class="btn primary" type="submit">追加</button>
+              <button class="btn" type="button" id="btnAddSample">サンプル単語を追加</button>
+            </div>
+            <div class="small">
+              例文は短くて十分です。空でも動きます。
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="panel section" id="sec-quiz">
+        <div class="ph">
+          <div class="k">
+            <div class="t">クイズ（4択）</div>
+            <div class="d">英単語 → 意味を選ぶ</div>
+          </div>
+          <div class="small mono" id="quizCounter"></div>
+        </div>
+        <div class="pc">
+          <div class="btnrow" style="margin-top:0">
+            <button class="btn primary" id="btnStartQuiz">10問スタート</button>
+            <button class="btn" id="btnResetQuiz">リセット</button>
+          </div>
+          <div style="margin-top:12px" id="quizArea" class="card" hidden>
+            <div class="meta">
+              <div class="pill" id="quizPill">Question</div>
+            </div>
+            <div class="word" id="quizWord">-</div>
+            <div class="mcq" id="quizOptions"></div>
+            <div class="small" style="margin-top:10px" id="quizFeedback"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel section" id="sec-list">
+        <div class="ph">
+          <div class="k">
+            <div class="t">一覧</div>
+            <div class="d">検索・編集・削除</div>
+          </div>
+        </div>
+        <div class="pc">
+          <div class="row2">
+            <div>
+              <label>検索（英単語/意味/タグ）</label>
+              <input id="inSearch" placeholder="例: under / trust / reading" />
+            </div>
+            <div>
+              <label>操作</label>
+              <div class="btnrow" style="margin-top:6px">
+                <button class="btn" id="btnExportNow" type="button">今すぐエクスポート</button>
+                <button class="btn bad" id="btnClearAll" type="button">全削除</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="list" id="cardList"></div>
+
+          <div id="editBox" class="card" style="margin-top:14px; display:none">
+            <div class="meta">
+              <div class="pill">編集</div>
+              <div class="pill mono" id="editId"></div>
+            </div>
+            <div class="form">
+              <div class="row2">
+                <div>
+                  <label>英単語</label>
+                  <input id="editWord" />
+                </div>
+                <div>
+                  <label>品詞</label>
+                  <input id="editPos" placeholder="例: verb" />
+                </div>
+              </div>
+              <div>
+                <label>意味</label>
+                <input id="editMeaning" />
+              </div>
+              <div class="row2">
+                <div>
+                  <label>タグ</label>
+                  <input id="editTag" />
+                </div>
+                <div>
+                  <label>例文</label>
+                  <input id="editExample" />
+                </div>
+              </div>
+              <div class="btnrow">
+                <button class="btn primary" id="btnSaveEdit" type="button">保存</button>
+                <button class="btn" id="btnCancelEdit" type="button">キャンセル</button>
+                <button class="btn bad" id="btnDeleteEdit" type="button">削除</button>
+              </div>
+              <div class="small">学習スケジュール（間隔）は保持されます。</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel section" id="sec-backup">
+        <div class="ph">
+          <div class="k">
+            <div class="t">バックアップ</div>
+            <div class="d">JSONでエクスポート/インポート</div>
+          </div>
+        </div>
+        <div class="pc">
+          <div class="small">
+            端末間で移す場合は、ここでエクスポートして別端末でインポートしてください。
+          </div>
+          <div class="row2" style="margin-top:10px">
+            <div>
+              <label>エクスポート（コピー）</label>
+              <textarea id="outJson" readonly></textarea>
+              <div class="btnrow">
+                <button class="btn primary" id="btnCopyJson" type="button">コピー</button>
+                <button class="btn" id="btnRefreshJson" type="button">更新</button>
+              </div>
+            </div>
+            <div>
+              <label>インポート（貼り付け→反映）</label>
+              <textarea id="inJson" placeholder='{"cards":[...],"quizLog":[...]}'></textarea>
+              <div class="btnrow">
+                <button class="btn good" id="btnImportJson" type="button">インポート</button>
+              </div>
+              <div class="small">形式が違う場合はエラーになります。</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const STORAGE_KEY = "toefl_vocab_trainer_v1";
+
+    function nowMs(){ return Date.now(); }
+    function dayMs(n){ return n * 24 * 60 * 60 * 1000; }
+    function fmtDate(ms){
+      const d = new Date(ms);
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,"0");
+      const da = String(d.getDate()).padStart(2,"0");
+      return `${y}-${m}-${da}`;
+    }
+    function uid(){
+      return Math.random().toString(16).slice(2) + "-" + Math.random().toString(16).slice(2);
+    }
+
+    function toast(msg){
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(()=>t.classList.remove("show"), 1800);
+    }
+
+    function defaultState(){
+      return {
+        cards: [],
+        quizLog: [], // {ts, total, correct}
+        studyToday: { date: fmtDate(nowMs()), done: 0, target: 0 }
+      };
+    }
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return defaultState();
+        const s = JSON.parse(raw);
+        if(!s.cards) return defaultState();
+        return s;
+      }catch(e){
+        return defaultState();
+      }
+    }
+    function saveState(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      refreshAll();
+    }
+
+    function normalizeState(){
+      const today = fmtDate(nowMs());
+      if(!state.studyToday || state.studyToday.date !== today){
+        state.studyToday = { date: today, done: 0, target: 0 };
+      }
+      if(!Array.isArray(state.cards)) state.cards = [];
+      if(!Array.isArray(state.quizLog)) state.quizLog = [];
+    }
+
+    function addCard({word, meaning, pos="", tag="", example=""}){
+      const t = nowMs();
+      state.cards.push({
+        id: uid(),
+        word: word.trim(),
+        meaning: meaning.trim(),
+        pos: pos.trim(),
+        tag: tag.trim(),
+        example: example.trim(),
+        createdAt: t,
+        updatedAt: t,
+        // spaced repetition fields
+        reps: 0,
+        intervalDays: 0,
+        ease: 2.5,
+        nextDue: t,
+        lapses: 0
+      });
+    }
+
+    function dueCards(){
+      const t = nowMs();
+      return state.cards
+        .filter(c => (c.nextDue ?? 0) <= t)
+        .sort((a,b)=>(a.nextDue ?? 0)-(b.nextDue ?? 0));
+    }
+
+    function qualityFromRate(rate){
+      // SM-2 quality: 0..5
+      if(rate==="again") return 1;
+      if(rate==="hard") return 3;
+      if(rate==="good") return 4;
+      return 5; // easy
+    }
+
+    function reviewCard(card, rate){
+      const q = qualityFromRate(rate);
+      let ease = Number(card.ease ?? 2.5);
+      let reps = Number(card.reps ?? 0);
+      let interval = Number(card.intervalDays ?? 0);
+
+      if(q < 3){
+        reps = 0;
+        interval = 1;
+        ease = Math.max(1.3, ease - 0.2);
+        card.lapses = Number(card.lapses ?? 0) + 1;
+      }else{
+        reps += 1;
+        if(reps === 1) interval = 1;
+        else if(reps === 2) interval = 6;
+        else interval = Math.round(interval * ease);
+
+        // SM-2 ease update
+        const diff = (5 - q);
+        ease = ease + (0.1 - diff * (0.08 + diff * 0.02));
+        ease = Math.max(1.3, ease);
+      }
+
+      card.reps = reps;
+      card.intervalDays = interval;
+      card.ease = ease;
+      card.nextDue = nowMs() + dayMs(interval);
+      card.updatedAt = nowMs();
+
+      // today progress
+      state.studyToday.done += 1;
+    }
+
+    function sampleCards(){
+      return [
+        {word:"substantial", meaning:"かなりの／重要な", pos:"adjective", tag:"academic", example:"There is substantial evidence to support the claim."},
+        {word:"undermine", meaning:"（信頼・努力などを）損なう／弱める", pos:"verb", tag:"academic", example:"The rumor undermined public trust."},
+        {word:"allocate", meaning:"（資源・時間などを）割り当てる", pos:"verb", tag:"academic", example:"We allocated more time to writing practice."},
+        {word:"impose", meaning:"（負担・規則などを）課す", pos:"verb", tag:"academic", example:"The school imposed strict rules on attendance."},
+        {word:"prevalent", meaning:"広く見られる／蔓延している", pos:"adjective", tag:"reading", example:"This issue is prevalent in urban areas."},
+        {word:"reluctant", meaning:"気が進まない／乗り気でない", pos:"adjective", tag:"speaking", example:"He was reluctant to change his opinion."},
+        {word:"analogous", meaning:"類似した", pos:"adjective", tag:"reading", example:"The process is analogous to natural selection."},
+        {word:"reinforce", meaning:"強化する", pos:"verb", tag:"academic", example:"Regular review reinforces long-term memory."},
+        {word:"feasible", meaning:"実行可能な", pos:"adjective", tag:"writing", example:"A feasible plan should be simple and realistic."},
+        {word:"derive", meaning:"由来する／導き出す", pos:"verb", tag:"academic", example:"The word derives from Latin."}
+      ];
+    }
+
+    function latestQuizAcc(){
+      const recent = state.quizLog.slice(-5);
+      if(recent.length===0) return "-";
+      const total = recent.reduce((s,x)=>s + x.total, 0);
+      const correct = recent.reduce((s,x)=>s + x.correct, 0);
+      const p = Math.round((correct / Math.max(1,total)) * 100);
+      return `${p}%`;
+    }
+
+    // UI helpers
+    const $ = (id)=>document.getElementById(id);
+
+    function setTab(tab){
+      document.querySelectorAll(".tabbtn").forEach(b=>{
+        b.classList.toggle("active", b.dataset.tab === tab);
+      });
+      document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+      $(`sec-${tab}`).classList.add("active");
+      refreshAll();
+    }
+
+    // Study
+    let studyQueue = [];
+    let currentCard = null;
+
+    function refreshStudyQueue(){
+      studyQueue = dueCards();
+      state.studyToday.target = studyQueue.length;
+    }
+
+    function showStudyCard(){
+      refreshStudyQueue();
+
+      const due = studyQueue.length;
+      $("studyCounter").textContent = `Due: ${due} / Done today: ${state.studyToday.done}`;
+
+      if(due === 0){
+        $("studyEmpty").style.display = "block";
+        $("studyCard").style.display = "none";
+        currentCard = null;
+        return;
+      }
+
+      $("studyEmpty").style.display = "none";
+      $("studyCard").style.display = "block";
+
+      currentCard = studyQueue[0];
+      $("frontWord").textContent = currentCard.word;
+
+      $("pillPos").textContent = currentCard.pos ? currentCard.pos : "pos: -";
+      $("pillTag").textContent = currentCard.tag ? `tag: ${currentCard.tag}` : "tag: -";
+      $("pillDue").textContent = `next: ${fmtDate(currentCard.nextDue ?? nowMs())}`;
+
+      $("backMeaning").textContent = currentCard.meaning;
+      $("backExample").textContent = currentCard.example ? currentCard.example : "";
+
+      $("answerBox").classList.remove("show");
+    }
+
+    // Quiz
+    let quiz = {
+      active:false, idx:0, total:10, correct:0,
+      questions: [] // {cardId, word, options:[meaning...], answerMeaning}
+    };
+
+    function randPick(arr, n){
+      const a = arr.slice();
+      for(let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]] = [a[j],a[i]];
+      }
+      return a.slice(0, n);
+    }
+
+    function startQuiz(){
+      if(state.cards.length < 4){
+        toast("カードが少ないためクイズが作れません（最低4枚）。");
+        return;
+      }
+      const pool = state.cards.slice();
+      const picked = randPick(pool, Math.min(quiz.total, pool.length));
+
+      quiz.questions = picked.map(c=>{
+        const others = pool.filter(x=>x.id!==c.id);
+        const wrong = randPick(others, 3).map(x=>x.meaning);
+        const options = randPick([c.meaning, ...wrong], 4);
+        return { cardId: c.id, word: c.word, options, answerMeaning: c.meaning };
+      });
+
+      quiz.active = true;
+      quiz.idx = 0;
+      quiz.correct = 0;
+      $("quizArea").hidden = false;
+      renderQuizQ();
+    }
+
+    function renderQuizQ(){
+      if(!quiz.active) return;
+      $("quizCounter").textContent = `Q ${quiz.idx+1} / ${quiz.questions.length}  |  Correct ${quiz.correct}`;
+      const q = quiz.questions[quiz.idx];
+      $("quizWord").textContent = q.word;
+      $("quizPill").textContent = `Question ${quiz.idx+1}`;
+
+      const box = $("quizOptions");
+      box.innerHTML = "";
+      $("quizFeedback").textContent = "";
+
+      q.options.forEach(opt=>{
+        const b = document.createElement("button");
+        b.className = "opt";
+        b.textContent = opt;
+        b.addEventListener("click", ()=>{
+          const isCorrect = (opt === q.answerMeaning);
+          if(isCorrect){
+            b.classList.add("correct");
+            quiz.correct += 1;
+            $("quizFeedback").textContent = "正解";
+          }else{
+            b.classList.add("wrong");
+            $("quizFeedback").textContent = `不正解。正解：${q.answerMeaning}`;
+            // mark correct
+            [...box.querySelectorAll("button")].forEach(x=>{
+              if(x.textContent === q.answerMeaning) x.classList.add("correct");
+            });
+          }
+          // disable
+          [...box.querySelectorAll("button")].forEach(x=>x.disabled = true);
+
+          setTimeout(()=>{
+            quiz.idx += 1;
+            if(quiz.idx >= quiz.questions.length){
+              endQuiz();
+            }else{
+              renderQuizQ();
+            }
+          }, 650);
+        });
+        box.appendChild(b);
+      });
+    }
+
+    function endQuiz(){
+      quiz.active = false;
+      const total = quiz.questions.length;
+      const correct = quiz.correct;
+      state.quizLog.push({ ts: nowMs(), total, correct });
+      $("quizCounter").textContent = `Result: ${correct}/${total}`;
+      $("quizFeedback").textContent = `結果：${correct}/${total}`;
+      saveState();
+    }
+
+    // List + edit
+    let editingId = null;
+
+    function renderList(){
+      const q = $("inSearch").value.trim().toLowerCase();
+      const list = $("cardList");
+      list.innerHTML = "";
+
+      const cards = state.cards.slice().sort((a,b)=>a.word.localeCompare(b.word));
+      const filtered = q ? cards.filter(c=>{
+        const hay = `${c.word} ${c.meaning} ${c.tag}`.toLowerCase();
+        return hay.includes(q);
+      }) : cards;
+
+      if(filtered.length === 0){
+        const d = document.createElement("div");
+        d.className = "small";
+        d.textContent = "一致するカードがありません。";
+        list.appendChild(d);
+        return;
+      }
+
+      filtered.forEach(c=>{
+        const it = document.createElement("div");
+        it.className = "item";
+
+        const left = document.createElement("div");
+        left.className = "l";
+
+        const w = document.createElement("div");
+        w.className = "w";
+        w.textContent = c.word;
+
+        const m = document.createElement("div");
+        m.className = "m";
+        m.textContent = c.meaning;
+
+        left.appendChild(w);
+        left.appendChild(m);
+
+        const right = document.createElement("div");
+        right.className = "btnrow";
+        right.style.marginTop = "0";
+
+        const bEdit = document.createElement("button");
+        bEdit.className = "btn";
+        bEdit.textContent = "編集";
+        bEdit.addEventListener("click", ()=>openEdit(c.id));
+
+        right.appendChild(bEdit);
+
+        it.appendChild(left);
+        it.appendChild(right);
+
+        list.appendChild(it);
+      });
+    }
+
+    function openEdit(id){
+      const c = state.cards.find(x=>x.id===id);
+      if(!c) return;
+      editingId = id;
+      $("editBox").style.display = "block";
+      $("editId").textContent = id.slice(0,8);
+
+      $("editWord").value = c.word ?? "";
+      $("editPos").value = c.pos ?? "";
+      $("editMeaning").value = c.meaning ?? "";
+      $("editTag").value = c.tag ?? "";
+      $("editExample").value = c.example ?? "";
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }
+
+    function closeEdit(){
+      editingId = null;
+      $("editBox").style.display = "none";
+    }
+
+    function saveEdit(){
+      if(!editingId) return;
+      const c = state.cards.find(x=>x.id===editingId);
+      if(!c) return;
+
+      c.word = $("editWord").value.trim();
+      c.pos = $("editPos").value.trim();
+      c.meaning = $("editMeaning").value.trim();
+      c.tag = $("editTag").value.trim();
+      c.example = $("editExample").value.trim();
+      c.updatedAt = nowMs();
+
+      saveState();
+      toast("保存しました");
+      renderList();
+      closeEdit();
+    }
+
+    function deleteEdit(){
+      if(!editingId) return;
+      const idx = state.cards.findIndex(x=>x.id===editingId);
+      if(idx < 0) return;
+      state.cards.splice(idx,1);
+      saveState();
+      toast("削除しました");
+      renderList();
+      closeEdit();
+    }
+
+    // Backup
+    function refreshBackup(){
+      $("outJson").value = JSON.stringify(state, null, 2);
+    }
+
+    function importBackup(){
+      const raw = $("inJson").value.trim();
+      if(!raw){
+        toast("入力が空です");
+        return;
+      }
+      try{
+        const s = JSON.parse(raw);
+        if(!s.cards || !Array.isArray(s.cards)) throw new Error("cards missing");
+        state = s;
+        normalizeState();
+        saveState();
+        $("inJson").value = "";
+        toast("インポートしました");
+      }catch(e){
+        toast("形式が違います");
+      }
+    }
+
+    // Stats
+    function refreshStats(){
+      $("todayStr").textContent = fmtDate(nowMs());
+      $("statTotal").textContent = state.cards.length;
+
+      const due = dueCards().length;
+      $("statDue").textContent = due;
+
+      $("statAcc").textContent = latestQuizAcc();
+
+      const target = Math.max(1, state.studyToday.target);
+      const done = state.studyToday.done;
+      const pct = Math.max(0, Math.min(100, Math.round((done/target)*100)));
+      $("progressBar").style.width = `${pct}%`;
+      $("progressText").textContent = `今日の復習：${done} / ${state.studyToday.target}（表示時点のdue枚数）`;
+    }
+
+    function refreshAll(){
+      normalizeState();
+      refreshStats();
+      showStudyCard();
+      renderList();
+      refreshBackup();
+    }
+
+    // Event wiring
+    document.querySelectorAll(".tabbtn").forEach(b=>{
+      b.addEventListener("click", ()=>setTab(b.dataset.tab));
+    });
+
+    $("btnReveal").addEventListener("click", ()=>{
+      $("answerBox").classList.add("show");
+    });
+
+    $("btnSkip").addEventListener("click", ()=>{
+      // move to end (simple)
+      if(studyQueue.length > 1){
+        const first = studyQueue.shift();
+        studyQueue.push(first);
+      }
+      showStudyCard();
+    });
+
+    $("studyCard").addEventListener("click", (e)=>{
+      const t = e.target;
+      if(!(t instanceof HTMLElement)) return;
+      const rate = t.getAttribute("data-rate");
+      if(!rate) return;
+      if(!currentCard) return;
+      reviewCard(currentCard, rate);
+      saveState();
+      showStudyCard();
+    });
+
+    $("addForm").addEventListener("submit", (e)=>{
+      e.preventDefault();
+      const word = $("inWord").value.trim();
+      const meaning = $("inMeaning").value.trim();
+      const pos = $("inPos").value;
+      const tag = $("inTag").value;
+      const example = $("inExampleOne").value;
+
+      if(!word || !meaning){
+        toast("英単語と意味は必須です");
+        return;
+      }
+      addCard({word, meaning, pos, tag, example});
+      $("inWord").value = "";
+      $("inMeaning").value = "";
+      $("inTag").value = "";
+      $("inExampleOne").value = "";
+      $("inPos").value = "";
+      saveState();
+      toast("追加しました");
+      setTab("study");
+    });
+
+    $("btnAddSample").addEventListener("click", ()=>{
+      sampleCards().forEach(x=>addCard(x));
+      saveState();
+      toast("サンプルを追加しました");
+    });
+
+    $("btnStartQuiz").addEventListener("click", startQuiz);
+    $("btnResetQuiz").addEventListener("click", ()=>{
+      quiz.active=false;
+      quiz.idx=0;
+      quiz.correct=0;
+      quiz.questions=[];
+      $("quizArea").hidden = true;
+      $("quizCounter").textContent = "";
+      toast("リセットしました");
+    });
+
+    $("inSearch").addEventListener("input", renderList);
+
+    $("btnSaveEdit").addEventListener("click", saveEdit);
+    $("btnCancelEdit").addEventListener("click", closeEdit);
+    $("btnDeleteEdit").addEventListener("click", deleteEdit);
+
+    $("btnRefreshJson").addEventListener("click", refreshBackup);
+    $("btnCopyJson").addEventListener("click", async ()=>{
+      try{
+        await navigator.clipboard.writeText($("outJson").value);
+        toast("コピーしました");
+      }catch(e){
+        toast("コピーできません（ブラウザ制限）");
+      }
+    });
+    $("btnImportJson").addEventListener("click", importBackup);
+
+    $("btnExportNow").addEventListener("click", ()=>{
+      setTab("backup");
+      refreshBackup();
+      toast("エクスポートを表示しました");
+    });
+
+    $("btnClearAll").addEventListener("click", ()=>{
+      const ok = confirm("全カードと学習履歴を削除します。よろしいですか？");
+      if(!ok) return;
+      state = defaultState();
+      saveState();
+      toast("全削除しました");
+    });
+
+    // boot
+    let state = loadState();
+    normalizeState();
+    refreshAll();
+  </script>
+</body>
+</html>
